@@ -247,7 +247,7 @@ class Lexicata_Form {
 	 * @since 1.0.0
 	 */
 	public function __clone () {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->_version );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->_version ); //WPCS: XSS okay;
 	} // End __clone ()
 
 	/**
@@ -256,7 +256,7 @@ class Lexicata_Form {
 	 * @since 1.0.0
 	 */
 	public function __wakeup () {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->_version );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->_version ); //WPCS: XSS okay;
 	} // End __wakeup ()
 
 	/**
@@ -368,9 +368,10 @@ class Lexicata_Form {
 	 */
     public function contact_form_submit_logic()
     {
-        if(isset($_POST['lf_submit']))
+        if(isset($_POST['lf_submit']) && ( isset( $_POST['lexicata-nonce'] )
+		&& wp_verify_nonce( $_POST['lexicata-nonce'], 'lexicata-form' ) ) )
         {
-            //sanitize form values
+			//sanitize form values
             $lf_first_name = sanitize_text_field( $_POST["lf_first_name"] );
             $lf_last_name = sanitize_text_field( $_POST["lf_last_name"] );
             $lf_email = sanitize_email( $_POST["lf_email"] );
@@ -381,6 +382,9 @@ class Lexicata_Form {
             $lf_honeypot_time = sanitize_text_field( $_POST["leave_this_alone"] );
 			$lf_recaptcha_response = $_POST['g-recaptcha-response'];
 
+			#cant check get_option for empty directly with older versions of php so we assign it first
+			$disclaimer_text = get_option('lf_disclaimer_text');
+
             //manual validation
             if(empty($lf_first_name))
                 $errors['first_name'] = "<li>First Name is invalid</li>";
@@ -390,9 +394,9 @@ class Lexicata_Form {
                 $errors['email'] = "<li>Email is invalid</li>";
             if(empty($lf_message))
                 $errors['message'] = "<li>Message is invalid</li>";
-            if(empty($lf_disclaimer) && !empty(get_option('lf_disclaimer_text')))
+            if(empty($lf_disclaimer) && !empty($disclaimer_text))
                 $errors['disclaimer'] = "<li>Must agree to the disclaimer</li>";
-            if(!empty($lf_phone) && strlen(preg_replace('/\D/','',$lf_phone)) == 0) #allow blank but not garbage
+            if(!empty($lf_phone) && strlen(preg_replace('/\D/','',$lf_phone)) === 0) #allow blank but not garbage
                 $errors['phone'] = "<li>Phone is invalid</li>";
 			if(get_option('lf_recaptcha_site_key') && !$this->check_recaptcha($lf_recaptcha_response))
 				$errors['recaptcha'] = "<li>Please confirm you are not a robot</li>";
@@ -404,7 +408,7 @@ class Lexicata_Form {
                    $html .= $value;
                 $html .= '</ul>';
 
-                echo $html;
+                echo $html; //WPCS: XSS okay.
                 return false;
             }
             elseif($this->check_honeypot(compact('lf_honeypot','lf_honeypot_time')))
@@ -440,7 +444,7 @@ class Lexicata_Form {
                         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
                         })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-                        ga('create', '".get_option('lf_google_analytics_id')."', 'auto');
+                        ga('create', '". esc_attr( get_option('lf_google_analytics_id') ) ."', 'auto');
                         ga('send', 'event', {
                           'eventCategory': 'LexicataForm',
                           'eventAction': 'SuccessfulSubmission',
@@ -461,7 +465,9 @@ class Lexicata_Form {
                     echo "<h3 class='lf_failure'>Unfortunately an error has occured. Please try again later.</h3>";
                 }
             }
-        }
+        } else {
+			$this->log_error('Nonce failure.');
+		}
     }
 
     /**
@@ -472,11 +478,11 @@ class Lexicata_Form {
 	 */
     private function submit_lead($lead)
     {
-        $url = "http://lexicata.com/inbox_leads";
+        $url = "http://app.lexicata.com/inbox_leads";
 
-        $array = Array(
+        $array = array(
             'auth_token' => get_option('lf_authorization_token'),
-            'inbox_lead' => Array(
+            'inbox_lead' => array(
                 'from_first' => $lead['lf_first_name'],
                 'from_last' => $lead['lf_last_name'],
                 'from_message' => $lead['lf_message'],
@@ -485,7 +491,7 @@ class Lexicata_Form {
                 'referring_url' => $lead['lf_referrer']
                 )
             );
-        $json = json_encode($array);
+        $json = wp_json_encode($array);
 
         $args = array(
             'headers' => array(
@@ -502,14 +508,14 @@ class Lexicata_Form {
         {
             $error_message = $response->get_error_message();
             $this->log_error("wp http_api error: http status: {$response['response']['code']}; error message: $error_message");
-            $this->log_error("wp http_api response dump: ".print_r($response,true));
+            $this->log_error("wp http_api response dump: ".print_r($response,true));// WPCS: XSS okay.
             return false;
         }
         else
         {
             #currently no documented error codes from the lexicata api, so this will need to be made more robust
             #once that happens
-            $this->log_error("Not a wp http_api error; response dump: ".print_r($response,true));
+            $this->log_error("Not a wp http_api error; response dump: ".print_r($response,true));// WPCS: XSS okay.
             return false;
         }
     }
@@ -573,7 +579,7 @@ class Lexicata_Form {
 
 	    $url = "https://www.google.com/recaptcha/api/siteverify";
 
-        $array = Array(
+        $array = array(
             'secret' => get_option('lf_recaptcha_secret_key'),
 			'response' => $recaptcha_response,
 			'remoteip' => $_SERVER['REMOTE_ADDR'],
@@ -607,12 +613,12 @@ class Lexicata_Form {
 		if($thankyou_uri)
 		{
 			#if full fledged URL
-			if(filter_var($thankyou_uri, FILTER_VALIDATE_URL) !== FALSE)
+			if(filter_var($thankyou_uri, FILTER_VALIDATE_URL) !== false)
 			{
 				$url = $thankyou_uri;
 				//wp_redirect($url); exit; #headers already sent so we have to meta redirect
 				echo 'redirecting...';
-				echo '<meta http-equiv="refresh" content="0;url='.$url.'">'; exit();
+				echo '<meta http-equiv="refresh" content="0;url='. esc_url( $url ) .'">'; exit();
 
 			}
 			else #if permalink path
@@ -623,14 +629,14 @@ class Lexicata_Form {
 					$url = get_permalink( $page->ID );
 					//wp_redirect($url); exit; #headers already sent so we have to meta redirect
 					echo 'redirecting...';
-					echo '<meta http-equiv="refresh" content="0;url='.$url.'">'; exit();
+					echo '<meta http-equiv="refresh" content="0;url='. esc_url( $url ) .'">'; exit();
 				}
 			}
 		}
 
 		#show thankyou message text
 		if( $thankyou_text = get_option('lf_successful_submit_message') )
-			echo "<h3 class='lf_success'>$thankyou_text</h3>";
+			echo "<h3 class='lf_success'>" . esc_html( $thankyou_text ) . "</h3>";
 		else
 			echo "<h3 class='lf_success'>Thank you! Your inquiry has been successfully submitted</h3>";
 	}
@@ -641,18 +647,18 @@ class Lexicata_Form {
 		$blacklist = explode("\n",get_option('lf_domain_blacklist'));
 		$blacklist = array_map('rtrim',$blacklist); #remove whitespace
 
-		return (in_array($domain,$blacklist)) ? true : false;
+		return (in_array( $domain, $blacklist, true)) ? true : false;
 	}
 
 
 	/* for use with <option selected> */
 	protected function is_selected($needle,$haystack,$type='')
 	{
-		$verb = in_array($type,['radio','checkbox']) ? 'checked' : 'selected';
+		$verb = in_array( $type,array('radio','checkbox'), true ) ? 'checked' : 'selected';
 
 		if(is_array($haystack))
-			return (in_array($needle,$haystack)) ? "$verb=\"$verb\"" : '';
+			return ( in_array( $needle,$haystack, true ) ) ? "$verb=\"$verb\"" : '';
 		else
-			return ($needle == $haystack) ? "$verb=\"$verb\"" : '';
+			return ($needle === $haystack) ? "$verb=\"$verb\"" : '';
 	}
 }

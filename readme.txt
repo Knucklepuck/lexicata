@@ -1,9 +1,9 @@
 === Lexicata ===
-Contributors: lexicata, One-400.com
+Contributors: lexicata, One-400.com, Knucklepuck
 Tags: contact form, CRM, Lexicata, law firm, lawyer, contact, lead tracking, wordpress, plugin
 Requires at least: 3.9
-Tested up to: 4.4.2
-Stable tag: 1.3.1
+Tested up to: 4.9.7
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,22 @@ Lexicata is built exclusively for law firms, and this plugin is intended to be u
 No, you must be a Lexicata user to use the plugin.
 
 == Changelog ==
+= 1.0.16 =
+* 2018-01-08
+* Updated URL for POST requests to be https://app.lexicata.com/inbox_leads
+
+= 1.0.15 =
+* 2017-07-18
+* Bugfix: fixed issue with older PHP versions
+
+= 1.0.14 =
+* 2017-05-30
+* Bugfix: fixed issue with missing default field labels
+
+= 1.0.13 =
+* 2017-05-19
+* Bugfix: fixed issue affecting only older versions of PHP
+
 = 1.0.12 =
 * 2017-05-16
 * Bugfix: fixed issue where phone placeholder was not showing up

@@ -443,17 +443,17 @@ class Lexicata_Form_Settings {
 
 			// Check posted/selected tab
 			$current_section = '';
-			if ( isset( $_POST['tab'] ) && $_POST['tab'] ) {
-				$current_section = $_POST['tab'];
+			if ( isset( $_POST['tab'] ) && $_POST['tab'] ) { //WPCS: CSRF okay;
+				$current_section = $_POST['tab']; //WPCS: CSRF okay;
 			} else {
-				if ( isset( $_GET['tab'] ) && $_GET['tab'] ) {
-					$current_section = $_GET['tab'];
+				if ( isset( $_GET['tab'] ) && $_GET['tab'] ) { //WPCS: CSRF okay;
+					$current_section = $_GET['tab']; //WPCS: CSRF okay;
 				}
 			}
 
 			foreach ( $this->settings as $section => $data ) {
 
-				if ( $current_section && $current_section != $section ) continue;
+				if ( $current_section && $current_section !== $section ) continue;
 
 				// Add section to page
 				add_settings_section( $section, $data['title'], array( $this, 'settings_section' ), $this->parent->_token . '_settings' );
@@ -480,8 +480,8 @@ class Lexicata_Form_Settings {
 	}
 
 	public function settings_section ( $section ) {
-		$html = '<p> ' . $this->settings[ $section['id'] ]['description'] . '</p>' . "\n";
-		echo $html;
+		$html = '<p> ' . esc_html( $this->settings[ $section['id'] ]['description'] ) . '</p>' . "\n";
+		echo $html; // WPCS XSS ok. Escaped above.
 	}
 
 	/**
@@ -528,11 +528,11 @@ class Lexicata_Form_Settings {
 					// Set tab class
 					$class = 'nav-tab';
 					if ( ! isset( $_GET['tab'] ) ) {
-						if ( 0 == $c ) {
+						if ( 0 === $c ) {
 							$class .= ' nav-tab-active';
 						}
 					} else {
-						if ( isset( $_GET['tab'] ) && $section == $_GET['tab'] ) {
+						if ( isset( $_GET['tab'] ) && $section === $_GET['tab'] ) {
 							$class .= ' nav-tab-active';
 						}
 					}
@@ -544,7 +544,7 @@ class Lexicata_Form_Settings {
 					}
 
 					// Output tab
-					$html .= '<a href="' . $tab_link . '" class="' . esc_attr( $class ) . '">' . esc_html( $data['title'] ) . '</a>' . "\n";
+					$html .= '<a href="' . esc_url( $tab_link ) . '" class="' . esc_attr( $class ) . '">' . esc_html( $data['title'] ) . '</a>' . "\n";
 
 					++$c;
 				}
@@ -552,7 +552,7 @@ class Lexicata_Form_Settings {
 				$html .= '</h2>' . "\n";
 			}
 
-            if(!isset($_GET['tab']) || $_GET['tab'] == 'standard') {
+            if(!isset($_GET['tab']) || $_GET['tab'] === 'standard') {
 				$html .= '<fieldset>';
 					$html .= '<legend>Shortcode</legend>';
 					$html .= '<br /><input type="text" readonly="readonly" value="[lexicata-contact-form]" />';
@@ -577,7 +577,7 @@ class Lexicata_Form_Settings {
 			    $html .= '</form>' . "\n";
             $html .= '</fieldset>';
 
-            if(!isset($_GET['tab']) || $_GET['tab'] == 'form_config') {
+            if(!isset($_GET['tab']) || $_GET['tab'] === 'form_config') {
 				#Begin Admin Preview Block #
 				$html .= '<fieldset>';
 					$html .= '<legend>Form Preview</legend>';
@@ -592,7 +592,7 @@ class Lexicata_Form_Settings {
 
 		$html .= '</div>' . "\n";
 
-		echo $html;
+		echo $html; //WPCS XSS ok. Escaped Above.
 	}
 
 	/**
@@ -618,7 +618,7 @@ class Lexicata_Form_Settings {
 	 * @since 1.0.0
 	 */
 	public function __clone () {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->parent->_version );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->parent->_version ); //WPCS: XSS okay;
 	} // End __clone()
 
 	/**
@@ -627,7 +627,7 @@ class Lexicata_Form_Settings {
 	 * @since 1.0.0
 	 */
 	public function __wakeup () {
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->parent->_version );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?' ), $this->parent->_version ); //WPCS: XSS okay;
 	} // End __wakeup()
 
 }

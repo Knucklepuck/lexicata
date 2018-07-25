@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: Lexicata Form
- * Version: 1.0.11
+ * Version: 1.0.16
  * Plugin URI:
  * Description: Creates a short code form to allow leads to be submitted directly into a the Admin's Lexicata account.
  * Author: Lexicata
@@ -35,7 +35,7 @@ require_once( 'includes/lib/class-lexicata-form-taxonomy.php' );
  * @return object Lexicata_Form
  */
 function Lexicata_Form () {
-	$instance = Lexicata_Form::instance( __FILE__, '1.0.11' );
+	$instance = Lexicata_Form::instance( __FILE__, '1.0.15' );
 
 	if ( is_null( $instance->settings ) ) {
 		$instance->settings = Lexicata_Form_Settings::instance( $instance );
